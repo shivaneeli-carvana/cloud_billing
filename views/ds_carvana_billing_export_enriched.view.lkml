@@ -125,7 +125,7 @@ view: ds_carvana_billing_export_enriched {
 
   parameter: Current_Month_Override {
     type: string
-    default_value: "ENTER YYYYMM"
+    default_value: "202403"
   }
   parameter: Day_of_Month_End {
     type: number
@@ -166,26 +166,71 @@ view: ds_carvana_billing_export_enriched {
 
 
 
-  dimension: current_month{
+  dimension: current_month_cost {
     type: number
     sql:
     CASE
-    WHEN  {%parameter Current_Month_Override %} = 'ENTER YYYYMM' AND CAST(${invoice_month} AS INTEGER)=EXTRACT(YEAR From current_date)*100+EXTRACT(MONTH FROM current_Date) THEN ${adjusted_cost}
-    WHEN  {%parameter Current_Month_Override %} is NULL AND CAST(${invoice_month} AS INTEGER)=EXTRACT(YEAR From current_date)*100+EXTRACT(MONTH FROM current_Date) THEN ${adjusted_cost}
-    WHEN  ${invoice_month} ={%parameter Current_Month_Override %} THEN ${adjusted_cost}
-    ELSE 9999
-      END
-      ;;
+    WHEN  {%parameter Current_Month_Override %} = 'ENTER YYYYMM' AND CAST(${invoice_month} AS INTEGER)=EXTRACT(YEAR From current_date)*100+EXTRACT(MONTH FROM current_Date) THEN ${TABLE}.{% parameter cost_metric %}
+    WHEN  {%parameter Current_Month_Override %} is NULL AND CAST(${invoice_month} AS INTEGER)=EXTRACT(YEAR From current_date)*100+EXTRACT(MONTH FROM current_Date) THEN ${TABLE}.{% parameter cost_metric %}
+    WHEN  ${invoice_month} ={%parameter Current_Month_Override %} THEN ${TABLE}.{% parameter cost_metric %}
+    ELSE 0 END ;;
   }
+  measure: total_current_month_cost {
+    type: sum
+    sql: ${current_month_cost} ;;
+  }
+
+  dimension: last_month_cost {
+    type: number
+    sql:
+    CASE
+    WHEN  {%parameter Current_Month_Override %} = 'ENTER YYYYMM' AND CAST(${invoice_month} AS INTEGER)=Extract(YEAR from DATE_ADD(current_Date, INTERVAL -extract(day from current_date) day))*100+
+Extract(MONTH from DATE_ADD(current_Date, INTERVAL -extract(day from current_date) day)) THEN ${TABLE}.{% parameter cost_metric %}
+    WHEN  {%parameter Current_Month_Override %} is NULL AND CAST(${invoice_month} AS INTEGER)=Extract(YEAR from DATE_ADD(current_Date, INTERVAL -extract(day from current_date) day))*100+
+Extract(MONTH from DATE_ADD(current_Date, INTERVAL -extract(day from current_date) day)) THEN ${TABLE}.{% parameter cost_metric %}
+    WHEN  ${invoice_month} = CAST (EXTRACT(YEAR FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_Month_Override %} as INT)*100+01 AS STRING)), INTERVAL -1 DAY))*100 +
+EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_Month_Override %} as INT)*100+01 AS STRING)), INTERVAL -1 DAY)) AS STRING)
+     THEN ${TABLE}.{% parameter cost_metric %}
+    ELSE 0 END ;;
+  }
+  measure: total_last_month_cost {
+    type: sum
+    sql: ${last_month_cost} ;;
+  }
+
+  dimension: two_months_ago_cost {
+    type: number
+    sql:
+    CASE
+    WHEN  {%parameter Current_Month_Override %} = 'ENTER YYYYMM' AND CAST(${invoice_month} AS INTEGER)=Extract(YEAR from DATE_ADD(current_Date, INTERVAL -2 MONTH))*100+Extract(MONTH from DATE_ADD(current_Date, INTERVAL -2 MONTH)) THEN ${TABLE}.{% parameter cost_metric %}
+    WHEN  {%parameter Current_Month_Override %} is NULL AND CAST(${invoice_month} AS INTEGER)=Extract(YEAR from DATE_ADD(current_Date, INTERVAL -2 MONTH))*100+Extract(MONTH from DATE_ADD(current_Date, INTERVAL -2 MONTH)) THEN ${TABLE}.{% parameter cost_metric %}
+    WHEN  ${invoice_month} = CAST (EXTRACT(YEAR FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_Month_Override %} as INT)*100+01 AS STRING)), INTERVAL -2 MONTH))*100 +
+EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_Month_Override %} as INT)*100+01 AS STRING)), INTERVAL -2 MONTH)) AS STRING)
+     THEN ${TABLE}.{% parameter cost_metric %}
+    ELSE 0 END ;;
+  }
+  measure: total_two_months_ago_cost {
+    type: sum
+    sql: ${two_months_ago_cost} ;;
+  }
+
+  measure: variance_to_last_month {
+    type: number
+    sql: ${total_current_month_cost} - ${total_last_month_cost} ;;
+  }
+
+  measure: variance_percentage_to_last_month {
+    type: number
+    sql: IEEE_DIVIDE(${total_current_month_cost},${total_last_month_cost}) -1 ;;
+    value_format_name: percent_1
+  }
+
+
 
   measure: total_cost_by_cost_metric{
     type: sum
     sql:   ${TABLE}.{% parameter cost_metric %};;
   }
-
-
-
-
 
 
   measure: total_cost {
@@ -230,6 +275,10 @@ view: ds_carvana_billing_export_enriched {
     sql: ${discount_amount} ;;
   }
 
+  measure: total_usage_amount_in_pricing_units{
+    type: sum
+    sql:   ${usage_amount_in_pricing_units};;
+  }
 
 
 

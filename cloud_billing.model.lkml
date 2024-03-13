@@ -15,7 +15,9 @@ persist_with: billing_dev_default_datagroup
 
 explore: ds_carvana_billing_export_enriched {}
 
-
+explore: alerting_gcp_anomaly_dashboard {
+  label: "Anomaly Detection"
+}
 
 explore: gcp_billing_export_detailed {
 
