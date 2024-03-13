@@ -12,6 +12,11 @@ datagroup: billing_dev_default_datagroup {
 persist_with: billing_dev_default_datagroup
 # gcp_billing_export_detailed
 
+
+explore: ds_carvana_billing_export_enriched {}
+
+
+
 explore: gcp_billing_export_detailed {
 
   # from: gcp_billing_export_resource_v1_015_c22_404796_5_ce9_d2
