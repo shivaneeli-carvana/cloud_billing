@@ -126,6 +126,7 @@ view: ds_carvana_billing_export_enriched {
   parameter: Current_Month_Override {
     type: string
     default_value: "202403"
+    suggest_dimension: invoice_month
   }
   parameter: Day_of_Month_End {
     type: number
@@ -178,6 +179,7 @@ view: ds_carvana_billing_export_enriched {
   measure: total_current_month_cost {
     type: sum
     sql: ${current_month_cost} ;;
+    value_format_name: usd_0
   }
 
   dimension: last_month_cost {
@@ -196,6 +198,7 @@ EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_M
   measure: total_last_month_cost {
     type: sum
     sql: ${last_month_cost} ;;
+    value_format_name: usd_0
   }
 
   dimension: two_months_ago_cost {
@@ -212,11 +215,13 @@ EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_M
   measure: total_two_months_ago_cost {
     type: sum
     sql: ${two_months_ago_cost} ;;
+    value_format_name: usd_0
   }
 
   measure: variance_to_last_month {
     type: number
     sql: ${total_current_month_cost} - ${total_last_month_cost} ;;
+    value_format_name: usd_0
   }
 
   measure: variance_percentage_to_last_month {
@@ -230,27 +235,32 @@ EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_M
   measure: total_cost_by_cost_metric{
     type: sum
     sql:   ${TABLE}.{% parameter cost_metric %};;
+    value_format_name: usd_0
   }
 
 
   measure: total_cost {
     type: sum
     sql: ${cost} ;;
+    value_format_name: usd_0
   }
 
   measure: total_cost_at_list {
     type: sum
     sql: ${cost_at_list} ;;
+    value_format_name: usd_0
   }
 
   measure: total_adjusted_cost {
     type: sum
     sql: ${adjusted_cost} ;;
+    value_format_name: usd_0
   }
 
   measure: total_adjusted_cost_ex_promotions {
     type: sum
     sql: ${adjusted_cost_ex_promotions} ;;
+    value_format_name: usd_0
   }
 
 
@@ -258,26 +268,31 @@ EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_M
   measure: total_promotion_amount {
     type: sum
     sql: ${promotion_amount} ;;
+    value_format_name: usd_0
   }
 
   measure: total_sud_amount {
     type: sum
     sql: ${sud_amount} ;;
+    value_format_name: usd_0
   }
 
   measure: total_cud_amount {
     type: sum
     sql: ${cud_amount} ;;
+    value_format_name: usd_0
   }
 
   measure: total_discount_amount {
     type: sum
     sql: ${discount_amount} ;;
+    value_format_name: usd_0
   }
 
   measure: total_usage_amount_in_pricing_units{
     type: sum
     sql:   ${usage_amount_in_pricing_units};;
+    value_format_name: usd_0
   }
 
 

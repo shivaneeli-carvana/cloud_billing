@@ -86,26 +86,31 @@ view: alerting_gcp_anomaly_dashboard {
   dimension: normal_spend{
     type: number
     sql:  ${adjusted_cost} - ${anomaly_amount} ;;
+    value_format_name: usd_0
   }
 
 
   measure: total_cost {
     type: sum
     sql: ${cost} ;;
+    value_format_name: usd_0
   }
   measure: total_adjusted_cost {
     type: sum
     sql: ${adjusted_cost} ;;
+    value_format_name: usd_0
   }
 
   measure: total_anomaly_amount {
     type: sum
     sql: ${anomaly_amount} ;;
+    value_format_name: usd_0
   }
 
   measure: total_normal_spend {
     type: sum
     sql: ${normal_spend} ;;
+    value_format_name: usd_0
   }
 
 
