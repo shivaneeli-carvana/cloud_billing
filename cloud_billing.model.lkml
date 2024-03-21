@@ -13,10 +13,13 @@ persist_with: billing_dev_default_datagroup
 # gcp_billing_export_detailed
 
 
-explore: ds_carvana_billing_export_enriched {}
+explore: ds_carvana_billing_export_enriched {
+  sql_always_where: ${ds_carvana_billing_export_enriched.usage_start_date_pt_year} >= 2022 ;;
+}
 
 explore: alerting_gcp_anomaly_dashboard {
   label: "Anomaly Detection"
+  sql_always_where: ${alerting_gcp_anomaly_dashboard.usage_start_year} >= 2022 ;;
 }
 
 explore: gcp_billing_export_detailed {

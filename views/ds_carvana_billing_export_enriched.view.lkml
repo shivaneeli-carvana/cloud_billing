@@ -16,6 +16,17 @@ view: ds_carvana_billing_export_enriched {
 
   }
 
+  parameter: day_of_month_start {
+    type: number
+    # value_format_name: decimal_1
+    default_value: "1"
+  }
+
+  parameter: day_of_month_end {
+    type: number
+    default_value: "31"
+  }
+
 
  dimension: adjusted_cost {
     type: number
@@ -109,14 +120,14 @@ view: ds_carvana_billing_export_enriched {
   }
   dimension_group: usage_start {
     type: time
-    timeframes: [raw, date, week, month, quarter, year]
+    timeframes: [raw, date, day_of_month, week, month, quarter, year]
     convert_tz: no
     datatype: date
     sql: ${TABLE}.usage_start_date ;;
   }
   dimension_group: usage_start_date_pt {
     type: time
-    timeframes: [raw, date, week, month, quarter, year]
+    timeframes: [raw, date,day_of_month, week, month, quarter, year]
     convert_tz: no
     datatype: date
     sql: ${TABLE}.usage_start_date_PT ;;
@@ -128,23 +139,22 @@ view: ds_carvana_billing_export_enriched {
     default_value: "202403"
     suggest_dimension: invoice_month
   }
-  parameter: Day_of_Month_End {
-    type: number
+  # parameter: Day_of_Month_End {
+  #   type: number
 
-  }
+  # }
 
-  parameter: Day_of_Month_Start{
-    type: number
+  # parameter: Day_of_Month_Start{
+  #   type: number
 
-  }
+  # }
 
 
   dimension: validated_day_Month_end{
     type: number
     sql:
       CASE
-      WHEN {%parameter Day_of_Month_End %} >0 AND {%parameter Day_of_Month_End %} < 32  then {%parameter Day_of_Month_End %}
-
+      WHEN {%parameter day_of_month_end %} >0 AND {%parameter day_of_month_end %} < 32  then {%parameter day_of_month_end %}
       END
       ;;
   }
@@ -153,7 +163,7 @@ view: ds_carvana_billing_export_enriched {
     type: number
     sql:
       CASE
-      WHEN {%parameter Day_of_Month_Start %} >0 AND {%parameter Day_of_Month_Start %} < 32  then {%parameter Day_of_Month_Start %}
+      WHEN {%parameter day_of_month_start %} >0 AND {%parameter day_of_month_start %} < 32  then {%parameter day_of_month_start %}
 
       END
       ;;
@@ -178,7 +188,8 @@ view: ds_carvana_billing_export_enriched {
   }
   measure: total_current_month_cost {
     type: sum
-    sql: ${current_month_cost} ;;
+    sql: CASE WHEN ${usage_start_date_pt_day_of_month} between ${validated_day_Month_start} and ${validated_day_Month_end} THEN
+    ${current_month_cost} END;;
     value_format_name: usd_0
   }
 
@@ -197,7 +208,8 @@ EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_M
   }
   measure: total_last_month_cost {
     type: sum
-    sql: ${last_month_cost} ;;
+    sql: CASE WHEN ${usage_start_date_pt_day_of_month} between ${validated_day_Month_start} and ${validated_day_Month_end} THEN
+    ${last_month_cost} END;;
     value_format_name: usd_0
   }
 
@@ -214,7 +226,8 @@ EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_M
   }
   measure: total_two_months_ago_cost {
     type: sum
-    sql: ${two_months_ago_cost} ;;
+    sql: CASE WHEN ${usage_start_date_pt_day_of_month} between ${validated_day_Month_start} and ${validated_day_Month_end} THEN
+        ${two_months_ago_cost}  END;;
     value_format_name: usd_0
   }
 
