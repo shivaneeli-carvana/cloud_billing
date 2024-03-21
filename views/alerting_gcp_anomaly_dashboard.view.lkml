@@ -24,10 +24,12 @@ view: alerting_gcp_anomaly_dashboard {
   dimension: project_name {
     type: string
     sql: ${TABLE}.project_name ;;
+    drill_fields: [project_detail*]
   }
   dimension: service_description {
     type: string
     sql: ${TABLE}.Service_Description ;;
+    drill_fields: [project_detail*, -project_name]
   }
   dimension: sku_description {
     type: string
@@ -117,5 +119,9 @@ view: alerting_gcp_anomaly_dashboard {
   measure: count {
     type: count
     drill_fields: [project_name, op_ex_network_name]
+  }
+
+  set: project_detail {
+    fields: [project_name, service_description, sku_description]
   }
 }

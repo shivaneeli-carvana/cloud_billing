@@ -71,15 +71,17 @@ view: ds_carvana_billing_export_enriched {
   dimension: project_name {
     type: string
     sql: ${TABLE}.project_name ;;
+    drill_fields: [project_detail*]
   }
   dimension: promotion_amount {
     type: number
     sql: ${TABLE}.Promotion_amount ;;
   }
-  dimension: service_descritpion {
+  dimension: service_description {
     label: "Service Description"
     type: string
     sql: ${TABLE}.service_descritpion ;;
+    drill_fields: [project_detail*, -project_name]
   }
   dimension: service_id {
     label: "Service ID"
@@ -191,6 +193,7 @@ view: ds_carvana_billing_export_enriched {
     sql: CASE WHEN ${usage_start_date_pt_day_of_month} between ${validated_day_Month_start} and ${validated_day_Month_end} THEN
     ${current_month_cost} END;;
     value_format_name: usd_0
+    drill_fields: [detail*]
   }
 
   dimension: last_month_cost {
@@ -211,6 +214,7 @@ EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_M
     sql: CASE WHEN ${usage_start_date_pt_day_of_month} between ${validated_day_Month_start} and ${validated_day_Month_end} THEN
     ${last_month_cost} END;;
     value_format_name: usd_0
+    drill_fields: [detail*]
   }
 
   dimension: two_months_ago_cost {
@@ -229,6 +233,7 @@ EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_M
     sql: CASE WHEN ${usage_start_date_pt_day_of_month} between ${validated_day_Month_start} and ${validated_day_Month_end} THEN
         ${two_months_ago_cost}  END;;
     value_format_name: usd_0
+    drill_fields: [detail*]
   }
 
   measure: variance_to_last_month {
@@ -313,5 +318,13 @@ EXTRACT(MONTH FROM DATE_ADD(PARSE_DATE('%Y%m%d', CAST(CAST({%parameter Current_M
     measure: count {
     type: count
     drill_fields: [project_name]
+  }
+
+  set: project_detail {
+    fields: [project_name, service_description, sku_description]
+  }
+
+  set: detail {
+    fields: [invoice_month, project_detail*, service_id, sku_id, cost_metric,  total_current_month_cost, total_last_month_cost, total_two_months_ago_cost ]
   }
 }
