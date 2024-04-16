@@ -73,6 +73,13 @@ view: ds_carvana_billing_export_enriched {
     sql: ${TABLE}.project_name ;;
     drill_fields: [project_detail*]
   }
+
+  dimension: marketplace_inclusion {
+    type: string
+    sql: CASE WHEN ${project_name} = '[Charges not specific to a project]' THEN 'Marketplace'
+              ELSE 'All Other' END;;
+  }
+
   dimension: promotion_amount {
     type: number
     sql: ${TABLE}.Promotion_amount ;;
